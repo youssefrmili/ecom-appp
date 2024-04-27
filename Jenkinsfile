@@ -23,7 +23,7 @@ pipeline {
                         // Navigate into the microservice folder
                         dir(service) {
                             sh 'rm trufflehog || true'
-                            sh 'docker run trufflesecurity/trufflehog  github https://github.com/youssefrmili/Ecommerce-APP.git > trufflehog'
+                            sh 'docker run trufflesecurity/trufflehog  github --repo https://github.com/youssefrmili/Ecommerce-APP.git > trufflehog'
                             sh 'cat trufflehog'
                         }
                     }
