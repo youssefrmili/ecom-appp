@@ -129,8 +129,7 @@ pipeline {
                     // Iterate over each microservice folder
                     for (def service in microservices) {
                         // Scan the Docker image using Trivy
-                        sh "docker run --rm -v /home/youssef/.cache:/root/.cache/ aquasec/trivy"
-                        sh "trivy image youssefrm/${service}:latest > trivy.txt"
+                        sh "docker run --rm -v /home/youssef/.cache:/root/.cache/ aquasec/trivy youssefrm/${service}:latest > trivy.txt"
                     }
                 }
             }
