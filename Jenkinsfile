@@ -101,7 +101,7 @@ pipeline {
             steps {
                 script {
                     // Quality Gate
-                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonarqube-id'
                 }
             }
         }
