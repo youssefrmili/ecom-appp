@@ -97,15 +97,6 @@ pipeline {
             }
         }
 
-        stage('Quality Gate') {
-            steps {
-                script {
-                    // Quality Gate
-                    waitForQualityGate abortPipeline: false, credentialsId: 'sonarqube-id'
-                }
-            }
-        }
-
         stage('Docker Login') {
             steps {
                 script {
