@@ -17,13 +17,15 @@ pipeline {
 
         stage('Check-Git-Secrets') {
             steps {
-                // Iterate over each microservice folder
-                for (def service in microservices) {
-                    // Navigate into the microservice folder
-                    dir(service) {
-                        sh 'rm trufflehog || true'
-                        sh 'docker run gesellix/trufflehog --json https://github.com/youssefrmili/Ecommerce-APP.git > trufflehog'
-                        sh 'cat trufflehog'
+                script {
+                    // Iterate over each microservice folder
+                    for (def service in microservices) {
+                        // Navigate into the microservice folder
+                        dir(service) {
+                            sh 'rm trufflehog || true'
+                            sh 'docker run gesellix/trufflehog --json https://github.com/youssefrmili/Ecommerce-APP.git > trufflehog'
+                            sh 'cat trufflehog'
+                        }
                     }
                 }
             }
@@ -31,15 +33,17 @@ pipeline {
 
         stage('Source Composition Analysis') {
             steps {
-                // Iterate over each microservice folder
-                for (def service in microservices) {
-                    // Navigate into the microservice folder
-                    dir(service) {
-                        sh 'rm owasp* || true'
-                        sh 'wget "https://raw.githubusercontent.com/youssefrmili/Ecommerce-APP/test/owasp-dependency-check.sh" '
-                        sh 'chmod +x owasp-dependency-check.sh'
-                        sh 'bash owasp-dependency-check.sh'
-                        sh 'cat /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.xml'
+                script {
+                    // Iterate over each microservice folder
+                    for (def service in microservices) {
+                        // Navigate into the microservice folder
+                        dir(service) {
+                            sh 'rm owasp* || true'
+                            sh 'wget "https://raw.githubusercontent.com/youssefrmili/Ecommerce-APP/test/owasp-dependency-check.sh" '
+                            sh 'chmod +x owasp-dependency-check.sh'
+                            sh 'bash owasp-dependency-check.sh'
+                            sh 'cat /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.xml'
+                        }
                     }
                 }
             }
@@ -47,12 +51,14 @@ pipeline {
 
         stage('Build') {
             steps {
-                // Iterate over each microservice folder
-                for (def service in microservices) {
-                    // Navigate into the microservice folder
-                    dir(service) {
-                        // Build the microservice
-                        sh 'mvn clean install'
+                script {
+                    // Iterate over each microservice folder
+                    for (def service in microservices) {
+                        // Navigate into the microservice folder
+                        dir(service) {
+                            // Build the microservice
+                            sh 'mvn clean install'
+                        }
                     }
                 }
             }
@@ -60,12 +66,14 @@ pipeline {
 
         stage('Unit Test') {
             steps {
-                // Iterate over each microservice folder
-                for (def service in microservices) {
-                    // Navigate into the microservice folder
-                    dir(service) {
-                        // Test the microservice
-                        sh 'mvn test'
+                script {
+                    // Iterate over each microservice folder
+                    for (def service in microservices) {
+                        // Navigate into the microservice folder
+                        dir(service) {
+                            // Test the microservice
+                            sh 'mvn test'
+                        }
                     }
                 }
             }
@@ -73,14 +81,16 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                // Iterate over each microservice folder
-                for (def service in microservices) {
-                    // Navigate into the microservice folder
-                    dir(service) {
-                        // Execute SAST with SonarQube
-                        withSonarQubeEnv(credentialsId: 'sonarqube-id') {
-                            sh 'mvn sonar:sonar'
-                            sh 'cat target/sonar/report-task.txt'
+                script {
+                    // Iterate over each microservice folder
+                    for (def service in microservices) {
+                        // Navigate into the microservice folder
+                        dir(service) {
+                            // Execute SAST with SonarQube
+                            withSonarQubeEnv(credentialsId: 'sonarqube-id') {
+                                sh 'mvn sonar:sonar'
+                                sh 'cat target/sonar/report-task.txt'
+                            }
                         }
                     }
                 }
@@ -89,28 +99,34 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                // Quality Gate
-                waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
+                script {
+                    // Quality Gate
+                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
+                }
             }
         }
 
         stage('Docker Login') {
             steps {
-                // Docker login
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
+                script {
+                    // Docker login
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh "docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD"
+                    }
                 }
             }
         }
 
         stage('Docker Build') {
             steps {
-                // Iterate over each microservice folder
-                for (def service in microservices) {
-                    // Navigate into the microservice folder
-                    dir(service) {
-                        // Build Docker image
-                        sh "docker build -t youssefrm/${service}:latest ."
+                script {
+                    // Iterate over each microservice folder
+                    for (def service in microservices) {
+                        // Navigate into the microservice folder
+                        dir(service) {
+                            // Build Docker image
+                            sh "docker build -t youssefrm/${service}:latest ."
+                        }
                     }
                 }
             }
@@ -118,23 +134,26 @@ pipeline {
 
         stage('Trivy Image Scan') {
             steps {
-                // Iterate over each microservice folder
-                for (def service in microservices) {
-                    // Scan the Docker image using Trivy
-                    sh "docker run --rm -v /home/youssef/.cache:/root/.cache/ aquasec/trivy image --scanners vuln  youssefrm/ecomm-product:latest > trivy.txt"
+                script {
+                    // Iterate over each microservice folder
+                    for (def service in microservices) {
+                        // Scan the Docker image using Trivy
+                        sh "docker run --rm -v /home/youssef/.cache:/root/.cache/ aquasec/trivy image --scanners vuln youssefrm/${service}:latest > trivy.txt"
+                    }
                 }
             }
         }
 
         stage('Docker Push') {
             steps {
-                // Iterate over each microservice folder
-                for (def service in microservices) {
-                    // Push Docker image
-                    sh "docker push youssefrm/${service}:latest"
+                script {
+                    // Iterate over each microservice folder
+                    for (def service in microservices) {
+                        // Push Docker image
+                        sh "docker push youssefrm/${service}:latest"
+                    }
                 }
             }
         }
     }
 }
-
