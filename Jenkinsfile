@@ -115,7 +115,7 @@ pipeline {
             steps {
                 script {
                     iterateOverMicroservices {
-                        sh "docker run --rm -v /home/youssef/.cache:/root/.cache/ aquasec/trivy image --scanners vuln  youssefrm/ecomm-product:latest" > trivy.txt"
+                        sh "docker run --rm -v /home/youssef/.cache:/root/.cache/ aquasec/trivy image --scanners vuln  youssefrm/ecomm-product:latest > trivy.txt"
                     }
                 }
             }
